@@ -23,7 +23,6 @@ class GameFragment : Fragment() {
     // Create a ViewModel the first time the fragment is created.
     // If the fragment is re-created, it receives the same GameViewModel instance created by the
     // first fragment
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -45,23 +44,35 @@ class GameFragment : Fragment() {
         binding.wordCount.text = getString(
             R.string.word_count, 0, MAX_NO_OF_WORDS)
     }
-
     /*
     * Checks the user's word, and updates the score accordingly.
     * Displays the next scrambled word.
     */
     private fun onSubmitWord() {
+        val playerWord = binding.textInputEditText.text.toString()
 
+        if (viewModel.isUserWordCorrect(playerWord)) {
+            setErrorTextField(false)
+            if (viewModel.nextWord()) {
+                updateNextWordOnScreen()
+            } else {
+                showFinalScoreDialog()
+            }
+        } else {
+            setErrorTextField(true)
+        }
     }
-
     /*
      * Skips the current word without changing the score.
      * Increases the word count.
      */
     private fun onSkipWord() {
-
+        if (viewModel.nextWord()) {
+            updateNextWordOnScreen()
+        } else {
+            showFinalScoreDialog()
+        }
     }
-
     /*
      * Gets a random word for the list of words and shuffles the letters in it.
      */
@@ -70,7 +81,6 @@ class GameFragment : Fragment() {
         tempWord.shuffle()
         return String(tempWord)
     }
-
     /*
      * Re-initializes the data in the ViewModel and updates the views with the new data, to
      * restart the game.
@@ -79,14 +89,12 @@ class GameFragment : Fragment() {
         setErrorTextField(false)
         updateNextWordOnScreen()
     }
-
     /*
      * Exits the game.
      */
     private fun exitGame() {
         activity?.finish()
     }
-
     /*
     * Sets and resets the text field error status.
     */
@@ -99,19 +107,16 @@ class GameFragment : Fragment() {
             binding.textInputEditText.text = null
         }
     }
-
     /*
      * Displays the next scrambled word on screen.
      */
     private fun updateNextWordOnScreen() {
         binding.textViewUnscrambledWord.text = viewModel.currentScrambledWord
     }
-
     override fun onDetach() {
         super.onDetach()
         Log.d("GameFragment", "GameFragment destroyed!")
     }
-
     /*
 * Creates and shows an AlertDialog with the final score.
 */
@@ -127,6 +132,5 @@ class GameFragment : Fragment() {
                 restartGame()
             }
             .show()
-
     }
 }
